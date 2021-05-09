@@ -35,7 +35,7 @@ def findFact(goal):
 
 def myPrint(lst):
     for x in lst:
-        print(x, end=" ")
+        print(x, end=' ')
     print("\n")
 
 
@@ -43,6 +43,7 @@ class game:
     seed = 312
     cards = []
     goal = 24
+    solution = []
 
     def __init__(self, seed=312):
         random.seed(seed)
@@ -85,8 +86,9 @@ class game:
             sum = findSum(c)
             if (sum == goal):
                 ret = []
-                for i in c:
-                    ret += [i, '+']
+                for i in range(len(c)):
+                    if i < len(c)-1:
+                        ret += [c[i], '+']
                 ret += [c[-1]]
                 return ret
             # if multiply up to goal
@@ -103,36 +105,28 @@ class game:
                 if (i in factors):
                     x = i
                     y = goal // x
-                    result = self.findGoal(y, c.pop(i))
+                    result = self.findGoal(y, c.remove(i))
                     if (result != False):
                         return [x, '*', '('] + result + [')']
             # subtract a number from goal
             for i in c:
                 x = goal - i
-                result = self.findGoal(x, c.pop(i))
+                result = self.findGoal(x, c.remove(i))
                 if (result != False):
                     return [i, '+'] + result
             # add a number to goal
             for i in c:
                 x = goal + i
-                result = self.findGoal(x, c.pop(i))
+                result = self.findGoal(x, c.remove(i))
                 if (result != False):
                     return result + ['-', i]
             # multiply goal by a number
             for i in c:
                 x = goal * i
-                result = self.findGoal(x, c.pop(i))
+                result = self.findGoal(x, c.remove(i))
                 if (result != False):
                     return ['('] + result + [')', '/', i]
         return False
-
-    # play the 24 game!
-    def gameSolution(self):
-        result = self.findGoal(self.goal, self.cards)
-        if (result != False):
-            myPrint(result)
-        else:
-            print("There is no solution for the current card set.")
 
     # attempt is a list of player's input, check its correctness
     # paren is True if the attempt is inside a parenthesis
@@ -206,21 +200,12 @@ class game:
                 break
             except:
                 print("Invalid Integer! Please try again.")
-        while True:
-            try:
-                self.goal = input(
-                    "What's the number you want to play with? Enter a number between 20 and 60.  ")
-                self.goal = int(self.goal)
-                if (self.goal < 20 or self.goal > 60):
-                    print("Input integer out of range! Please try again.")
-                else:
-                    break
-            except:
-                print("Invalid Integer! Please try again.")
         for i in range(rounds):
-            if not self.cards:
-                del self.cards[:]
+            self.makeCards()
+            self.solution = self.findGoal(self.goal, self.cards)
+            while not self.solution:
                 self.makeCards()
+                self.solution = self.findGoal(self.goal, self.cards)
             print('Here are the cards.')
             myPrint(self.cards)
             print("You can only use +, -, *, and / as arithmetic operations.")
@@ -243,12 +228,14 @@ class game:
                 if (pIn[j] == ' '):
                     equation.append(pIn[i:j])
                     i = j + 1
+                if (j == len(pIn) - 1 and i == j):
+                    equation.append(pIn[j])
             result = self.calcRes(equation, False)
             if (result == self.goal):
                 print("Congratulations! You have found the solution.")
             else:
                 print("Ohhhhh, you missed it! Here is the correct solution.")
-                self.gameSolution()
+                myPrint(self.solution)
         print("Good game! Bye bye~")
 
 
